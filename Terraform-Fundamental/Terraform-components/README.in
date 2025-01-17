@@ -1,0 +1,85 @@
+#Terraform Components
+
+1. What is benefit with terraform ?
+    i. Terraform is a infrastructure as a code where we can create and manage infrastrure on cloud and easily reusable code. 
+    
+2. Why we need provider block?
+      Providers block which help to understand the terraform where to provision the infra
+3. Terraform components ?
+      terraform setting block: The terraform block is used to configure Terraform settings, including the required Terraform version, backend configuration, and feature toggles.
+      Resource Block         : This block is a main block where we are defining our infra configurations (eg : google_compute_instance )
+      Data Block             : Data block which help to retrive the data from running infrastrucutre 
+      Dynamic Block          : Generate multiple block device mappings dynamically.(eg : firewall rules) ( eg : dynamic "ingress" {for_each = [80, 22, 443}
+      variable block         : Variable block helps to pass the default values for meta arguments eg(machine_type)
+      output block           : It will help to get output values for resources (output = google_compute_instance.id)
+      backend                : Backend is a main components which help to store our State file 
+      State file             : terraformstate.tf is a main which contain all configuration values in that file
+
+4.What is Null resource in terrraform ?
+      You can use a null_resource in Google Cloud Platform (GCP) to execute custom scripts, run commands, or trigger actions based on changes in your infrastructure. 
+      For example, you might want to trigger an SSH command to configure a VM, install software, or even invoke GCP APIs using the null_resource and provisioners like local-exec or remote-exec.
+5. How will forcely recreate the resources?
+      Yes we can use replace command 
+      # terraform apply -replace="google_compute_instance.instancename"
+6. How will convert the infrasture 
+
+
+
+
+
+
+
+
+
+
+what is terrraform provisioners?
+    There is three kind of provisioners . In Terraform, Provisioners are used to execute scripts or commands on resources after they have been created or modified. 
+      File Provisioner: # The File Provisioner in Terraform is used to copy files or directories from your local machine to a remote resource, such as an EC2 instance, a virtual machine, or a container.
+                  resource "aws_instance" "example" {
+                      ami           = "ami-0c55b159cbfafe1f0"
+                      instance_type = "t2.micro"
+
+                      provisioner "file" {
+                        source      = "local-config.conf"  # File on your local machine
+                        destination = "/tmp/remote-config.conf"  # Destination on the remote machine
+                      }
+
+                  connection {
+                    type        = "ssh"
+                    user        = "ec2-user"
+                    private_key = file("~/.ssh/id_rsa")
+                    host        = self.public_ip
+                  }
+                }
+
+      Local-exec provisionser:
+                resource "aws_instance" "example" {
+                      ami           = "ami-0c55b159cbfafe1f0"
+                      instance_type = "t2.micro"
+                    
+                      provisioner "local-exec" {
+                        command = "echo ${self.public_ip} > public_ip.txt"
+                      }
+                    } 
+            
+      
+      remote-exec provisionser:
+                resource "google_compute_instance" "firstvm" {
+                  vm_name           = "myfirstVM"
+                  instance_type = "t2.micro"
+                
+                  provisioner "remote-exec" {
+                    inline = [
+                      "sudo apt-get update",
+                      "sudo apt-get install -y nginx"
+                    ]
+                
+                    connection {
+                      type        = "ssh"
+                      user        = "ubuntu"
+                      private_key = file("~/.ssh/id_rsa")
+                      host        = self.public_ip
+                    }
+                  }
+                } 
+

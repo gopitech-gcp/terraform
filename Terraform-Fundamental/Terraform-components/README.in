@@ -21,18 +21,72 @@
 5. How will forcely recreate the resources?
       Yes we can use replace command 
       # terraform apply -replace="google_compute_instance.instancename"
-6. How will convert the infrasture 
+6. How will you import existing infrastrucutre into terraform?
+      The import command in Terraform allows you to bring existing infrastructure resources under Terraform's management.
+      i) write terraform resource block as per running infrastructure
+      #terraform import google_compute_instance.my_instance projects/your-project-id/zones/us-central1-a/instances/my-instance
+      #terraform state list
+7. State file deleted mean what will happen and how will you recover?
+    The Terraform state file (terraform.tfstate) is crucial for managing infrastructure. If it gets deleted, here’s what happens and how to recover from it.
+    i)we have to import the resources using import command
+    ii) we can verifyt the terraform.tfstate.backup file 
+8. How to hide variable value in terraform?
+    we can store use senstive = true in variable.tf file. 
+    we can store in env var or else we can store any secretes vault
+    variable "db_password" {
+      type      = string
+      sensitive = true
+      default   = data.vault_generic_secret.db_creds.data["password"]
+    }
+
+9. Dynamic block in Terraform?
+    A dynamic block in Terraform allows you to generate nested blocks programmatically inside a resource or module, making configurations more flexible and reusable.
+     # Dynamic Egress Rules
+                         resource "google_compute_firewall" "example" {
+                          name    = "example-firewall"
+                          network = "default"
+                        
+                          # Dynamic Ingress Rules
+                          dynamic "allow" {
+                            for_each = var.ingress_rules
+                            content {
+                              protocol = allow.value["protocol"]
+                              ports    = allow.value["ports"]
+                            }
+                          }
+                        
+                          # Dynamic Egress Rules
+                          dynamic "deny" {
+                            for_each = var.egress_rules
+                            content {
+                              protocol = deny.value["protocol"]
+                              ports    = deny.value["ports"]
+                            }
+                          }
+                        
+                          source_ranges = ["0.0.0.0/0"]  # Allow all sources
+                          target_tags   = ["web-server"]
+                        }
 
 
-
-
-
-
-
-
-
-
-what is terrraform provisioners?
+10. Data source usage in terraform?
+        Data source is uses for retrieve the data from running resources
+        A data source in Terraform allows you to fetch and use existing infrastructure information from external sources without managing them directly.
+        This helps in referencing existing resources instead of creating new ones.
+                    data "google_compute_network" "existing_vpc" {
+                      name = "my-existing-vpc"
+                    }
+                    
+                    resource "google_compute_instance" "vm" {
+                      name         = "example-vm"
+                      machine_type = "e2-medium"
+                      zone         = "us-central1-a"
+                    
+                      network_interface {
+                        network = data.google_compute_network.existing_vpc.self_link
+                      }
+                    }
+11. what is terrraform provisioners?
     There is three kind of provisioners . In Terraform, Provisioners are used to execute scripts or commands on resources after they have been created or modified. 
       File Provisioner: # The File Provisioner in Terraform is used to copy files or directories from your local machine to a remote resource, such as an EC2 instance, a virtual machine, or a container.
                   resource "aws_instance" "example" {
